@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>8-Bit Tamagotchi</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Press Start 2P', cursive;
+            background: linear-gradient(45deg, #2c3e50, #3498db);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            font-size: 10px;
+        }
+        
+        .game-container {
+            background: #34495e;
+            border: 4px solid #ecf0f1;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            max-width: 600px;
+            width: 100%;
+        }
+        
+        .screen {
+            background: #1a1a1a;
+            border: 3px solid #555;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            min-height: 400px;
+            position: relative;
+        }
+        
+        .title {
+            text-align: center;
+            color: #e74c3c;
+            margin-bottom: 20px;
+            font-size: 16px;
+            text-shadow: 2px 2px 0px #000;
+        }
+        
+        .pet-display {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .pet-name {
+            color: #f39c12;
+            margin-bottom: 10px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        
+        .pet-name:hover {
+            color: #e67e22;
+        }
+        
+        .pet-sprite {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto;
+            background: #2c3e50;
+            border: 2px solid #ecf0f1;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            position: relative;
+            overflow: hidden;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+        }
+        
+        .pet-sprite img {
+            max-width: 100%;
+            max-height: 100%;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+        }
+        
+        .stats-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .stat {
+            background: #2c3e50;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #555;
+        }
+        
+        .stat-label {
+            color: #ecf0f1;
+            font-size: 8px;
+            margin-bottom: 5px;
+        }
+        
+        .stat-bar {
+            background: #555;
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .stat-fill {
+            height: 100%;
+            transition: width 0.5s ease;
+            border-radius: 5px;
+        }
+        
+        .stat-fill.hunger { background: #e74c3c; }
+        .stat-fill.happiness { background: #f39c12; }
+        .stat-fill.health { background: #27ae60; }
+        .stat-fill.energy { background: #3498db; }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid #c0392b;
+        }
+        
+        .btn:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn.feed { background: #e67e22; border-color: #d35400; }
+        .btn.play { background: #f39c12; border-color: #e67e22; }
+        .btn.sleep { background: #3498db; border-color: #2980b9; }
+        .btn.heal { background: #27ae60; border-color: #229954; }
+        
+        .btn.feed:hover { background: #d35400; }
+        .btn.play:hover { background: #e67e22; }
+        .btn.sleep:hover { background: #2980b9; }
+        .btn.heal:hover { background: #229954; }
+        
+        .mini-games {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .btn.minigame {
+            background: #9b59b6;
+            border-color: #8e44ad;
+        }
+        
+        .btn.minigame:hover {
+            background: #8e44ad;
+        }
+        
+        .utility-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+        
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+        
+        .file-input-label {
+            background: #8e44ad;
+            color: white;
+            border: 2px solid #7d3c98;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: block;
+            text-align: center;
+        }
+        
+        .file-input-label:hover {
+            background: #7d3c98;
+            transform: translateY(-2px);
+        }
+        
+        .age-display {
+            text-align: center;
+            margin-top: 10px;
+            color: #95a5a6;
+            font-size: 8px;
+        }
+        
+        .status-message {
+            text-align: center;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 8px;
+        }
+        
+        .status-message.alive {
+            background: rgba(39, 174, 96, 0.2);
+            color: #27ae60;
+        }
+        
+        .status-message.dead {
+            background: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+        }
+        
+        .modal-content {
+            background-color: #34495e;
+            margin: 15% auto;
+            padding: 20px;
+            border: 3px solid #ecf0f1;
+            border-radius: 10px;
+            width: 300px;
+            text-align: center;
+        }
+        
+        .modal input {
+            background: #2c3e50;
+            border: 2px solid #555;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 10px;
+            width: 200px;
+            margin: 10px 0;
+        }
+        
+        /* Pac-Man Game Modal */
+        .pacman-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.9);
+        }
+        
+        .pacman-content {
+            background-color: #1a1a1a;
+            margin: 2% auto;
+            padding: 20px;
+            border: 3px solid #ecf0f1;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 650px;
+            text-align: center;
+        }
+        
+        .pacman-title {
+            color: #f39c12;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .game-canvas {
+            border: 2px solid #555;
+            margin: 20px 0;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+        }
+        
+        .game-controls {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .game-info {
+            color: #ecf0f1;
+            margin: 10px 0;
+            font-size: 8px;
+            line-height: 1.5;
+        }
+        
+        @media (max-width: 600px) {
+            .game-container {
+                margin: 10px;
+                padding: 15px;
+            }
+            
+            .controls {
+                grid-template-columns: 1fr;
+            }
+            
+            .utility-controls {
+                grid-template-columns: 1fr;
+            }
+            
+            .pacman-content {
+                width: 95%;
+                margin: 5% auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="screen">
+            <h1 class="title">🎮 8-BIT TAMAGOTCHI 🎮</h1>
+            
+            <div class="pet-display">
+                <div class="pet-name" onclick="showRenameModal()" id="petName">Tama</div>
+                <div class="pet-sprite" id="petSprite">
+                    🐾
+                </div>
+                <div class="age-display" id="ageDisplay">Age: 0</div>
+            </div>
+            
+            <div class="status-message alive" id="statusMessage">
+                Your Tamagotchi is happy and healthy!
+            </div>
+            
+            <div class="stats-container">
+                <div class="stat">
+                    <div class="stat-label">HUNGER</div>
+                    <div class="stat-bar">
+                        <div class="stat-fill hunger" id="hungerBar" style="width: 50%"></div>
+                    </div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">HAPPINESS</div>
+                    <div class="stat-bar">
+                        <div class="stat-fill happiness" id="happinessBar" style="width: 50%"></div>
+                    </div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">HEALTH</div>
+                    <div class="stat-bar">
+                        <div class="stat-fill health" id="healthBar" style="width: 50%"></div>
+                    </div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">ENERGY</div>
+                    <div class="stat-bar">
+                        <div class="stat-fill energy" id="energyBar" style="width: 50%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button class="btn feed" onclick="performAction('feed')">🍎 FEED</button>
+            <button class="btn play" onclick="performAction('play')">🎯 PLAY</button>
+            <button class="btn sleep" onclick="performAction('sleep')">💤 SLEEP</button>
+            <button class="btn heal" onclick="performAction('heal')">💊 HEAL</button>
+        </div>
+        
+        <div class="mini-games">
+            <button class="btn minigame" onclick="openPacManGame()">🟡 PAC-MAN ADVENTURE</button>
+            <button class="btn minigame" onclick="openSnakeGame()">🐍 SNAKE CHALLENGE</button>
+            <button class="btn minigame" onclick="openMemoryGame()">🧠 MEMORY MATCH</button>
+        </div>
+        
+        <div class="utility-controls">
+            <div class="file-input-wrapper">
+                <input type="file" id="imageUpload" accept="image/*" onchange="uploadImage()">
+                <label for="imageUpload" class="file-input-label">📷 CUSTOMIZE</label>
+            </div>
+            <button class="btn" onclick="resetGame()">🔄 RESET</button>
+        </div>
+    </div>
+    
+    <!-- Rename Modal -->
+    <div id="renameModal" class="modal">
+        <div class="modal-content">
+            <h3>Rename Your Pet</h3>
+            <input type="text" id="newName" maxlength="20" placeholder="Enter new name">
+            <br>
+            <button class="btn" onclick="renamePet()">✓ SAVE</button>
+            <button class="btn" onclick="closeRenameModal()">✗ CANCEL</button>
+        </div>
+    </div>
+    
+    <!-- Pac-Man Game Modal -->
+    <div id="pacmanModal" class="pacman-modal">
+        <div class="pacman-content">
+            <h2 class="pacman-title">🟡 PAC-MAN ADVENTURE 🟡</h2>
+            
+            <div class="game-info">
+                Help your Tamagotchi collect all the dots while avoiding ghosts!<br>
+                Use WASD or Arrow Keys to move around the maze.
+            </div>
+            
+                             <canvas id="pacmanCanvas" class="game-canvas" width="560" height="560" tabindex="0"></canvas>
+            
+            <div class="game-controls">
+                <button class="btn" onclick="startPacManGame()">🚀 START</button>
+                <button class="btn" onclick="resetPacManGame()">🔄 RESET</button>
+                <button class="btn" onclick="closePacManGame()">❌ CLOSE</button>
+            </div>
+            
+            <div class="game-info" id="pacmanStatus">
+                Click START to begin your adventure!
+            </div>
+        </div>
+    </div>
+    
+    <!-- Snake Game Modal -->
+    <div id="snakeModal" class="pacman-modal">
+        <div class="pacman-content">
+            <h2 class="pacman-title">🐍 SNAKE CHALLENGE 🐍</h2>
+            
+            <div class="game-info">
+                Control your Tamagotchi snake to eat food and grow longer!<br>
+                Use WASD or Arrow Keys to change direction. Don't hit walls or yourself!
+            </div>
+            
+                             <canvas id="snakeCanvas" class="game-canvas" width="400" height="400" tabindex="0"></canvas>
+            
+            <div class="game-controls">
+                <button class="btn" onclick="startSnakeGame()">🚀 START</button>
+                <button class="btn" onclick="resetSnakeGame()">🔄 RESET</button>
+                <button class="btn" onclick="closeSnakeGame()">❌ CLOSE</button>
+            </div>
+            
+            <div class="game-info" id="snakeStatus">
+                Click START to begin growing your snake!
+            </div>
+        </div>
+    </div>
+    
+    <!-- Memory Game Modal -->
+    <div id="memoryModal" class="pacman-modal">
+        <div class="pacman-content">
+            <h2 class="pacman-title">🧠 MEMORY MATCH 🧠</h2>
+            
+            <div class="game-info">
+                Test your memory by matching pairs of Tamagotchi-themed cards!<br>
+                Click on cards to flip them and find matching pairs.
+            </div>
+            
+            <canvas id="memoryCanvas" class="game-canvas" width="400" height="400"></canvas>
+            
+            <div class="game-controls">
+                <button class="btn" onclick="startMemoryGame()">🚀 START</button>
+                <button class="btn" onclick="resetMemoryGame()">🔄 RESET</button>
+                <button class="btn" onclick="closeMemoryGame()">❌ CLOSE</button>
+            </div>
+            
+            <div class="game-info" id="memoryStatus">
+                Click START to test your memory skills!
+            </div>
+        </div>
+    </div>
+    
+    <script src="/static/pacman.js"></script>
+    <script src="/static/snake.js"></script>
+    <script src="/static/memory.js"></script>
+    <script>
+        let gameInterval;
+        let pacmanGame;
+        let snakeGame;
+        let memoryGame;
+        let currentTamagotchiImage = null;
+        
+        function updateGame() {
+            fetch('/status')
+                .then(response => response.json())
+                .then(data => {
+                    updateUI(data);
+                    currentTamagotchiImage = data.custom_image;
+                })
+                .catch(error => console.error('Error:', error));
+        }
+        
+        function updateUI(data) {
+            // Update name
+            document.getElementById('petName').textContent = data.name;
+            
+            // Update age
+            document.getElementById('ageDisplay').textContent = `Age: ${data.age}`;
+            
+            // Update stats
+            document.getElementById('hungerBar').style.width = data.hunger + '%';
+            document.getElementById('happinessBar').style.width = data.happiness + '%';
+            document.getElementById('healthBar').style.width = data.health + '%';
+            document.getElementById('energyBar').style.width = data.energy + '%';
+            
+            // Update status message
+            const statusMessage = document.getElementById('statusMessage');
+            if (!data.is_alive) {
+                statusMessage.textContent = '💀 Your Tamagotchi has died! Take better care next time.';
+                statusMessage.className = 'status-message dead';
+                document.getElementById('petSprite').innerHTML = '💀';
+            } else {
+                // Update sprite based on custom image or default
+                const petSprite = document.getElementById('petSprite');
+                if (data.custom_image) {
+                    petSprite.innerHTML = `<img src="${data.custom_image}" alt="Custom Pet">`;
+                } else {
+                    // Choose emoji based on stats
+                    let emoji = '🐾';
+                    if (data.happiness > 70 && data.health > 70) {
+                        emoji = '😸';
+                    } else if (data.hunger < 30) {
+                        emoji = '😿';
+                    } else if (data.energy < 30) {
+                        emoji = '😴';
+                    } else if (data.health < 50) {
+                        emoji = '🤒';
+                    }
+                    petSprite.innerHTML = emoji;
+                }
+                
+                // Status message based on overall condition
+                let message = '';
+                if (data.hunger < 20) {
+                    message = '🍎 Your pet is very hungry!';
+                } else if (data.happiness < 20) {
+                    message = '😢 Your pet is sad and needs attention!';
+                } else if (data.health < 30) {
+                    message = '🏥 Your pet needs medical care!';
+                } else if (data.energy < 20) {
+                    message = '💤 Your pet is very tired!';
+                } else {
+                    message = '✨ Your pet is doing well!';
+                }
+                
+                statusMessage.textContent = message;
+                statusMessage.className = 'status-message alive';
+            }
+        }
+        
+        function performAction(action) {
+            fetch(`/action/${action}`)
+                .then(response => response.json())
+                .then(data => {
+                    updateUI(data);
+                })
+                .catch(error => console.error('Error:', error));
+        }
+        
+        function uploadImage() {
+            const fileInput = document.getElementById('imageUpload');
+            const file = fileInput.files[0];
+            
+            if (file) {
+                const formData = new FormData();
+                formData.append('image', file);
+                
+                fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateGame();
+                    } else {
+                        alert('Error uploading image: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error uploading image');
+                });
+            }
+        }
+        
+        function resetGame() {
+            if (confirm('Are you sure you want to reset your Tamagotchi?')) {
+                fetch('/reset')
+                    .then(response => response.json())
+                    .then(data => {
+                        updateUI(data);
+                    })
+                    .catch(error => console.error('Error:', error));
+            }
+        }
+        
+        function showRenameModal() {
+            document.getElementById('renameModal').style.display = 'block';
+            document.getElementById('newName').value = document.getElementById('petName').textContent;
+        }
+        
+        function closeRenameModal() {
+            document.getElementById('renameModal').style.display = 'none';
+        }
+        
+        function renamePet() {
+            const newName = document.getElementById('newName').value;
+            if (newName.trim()) {
+                fetch('/rename', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({name: newName.trim()})
+                })
+                .then(response => response.json())
+                .then(data => {
+                    updateUI(data);
+                    closeRenameModal();
+                })
+                .catch(error => console.error('Error:', error));
+            }
+        }
+        
+        // Pac-Man Game Functions
+        function openPacManGame() {
+            // Stop other games first
+            stopAllGames();
+            document.getElementById('pacmanModal').style.display = 'block';
+            if (!pacmanGame) {
+                pacmanGame = new PacManGame('pacmanCanvas', currentTamagotchiImage);
+            }
+            pacmanGame.reset();
+        }
+        
+        function closePacManGame() {
+            document.getElementById('pacmanModal').style.display = 'none';
+            if (pacmanGame) {
+                pacmanGame.gameRunning = false;
+                pacmanGame.unbindEvents();
+            }
+        }
+        
+        function startPacManGame() {
+            if (pacmanGame) {
+                // Focus the canvas to ensure keyboard input works
+                document.getElementById('pacmanCanvas').focus();
+                pacmanGame.start();
+                document.getElementById('pacmanStatus').textContent = 'Game in progress! Collect all dots to win!';
+                
+                // Check game status periodically
+                const checkGameStatus = setInterval(() => {
+                    if (!pacmanGame.gameRunning) {
+                        clearInterval(checkGameStatus);
+                        const result = pacmanGame.getGameResult();
+                        
+                        if (result.won) {
+                            document.getElementById('pacmanStatus').textContent = 
+                                `🏆 Victory! Score: ${result.score}. Your Tamagotchi gained happiness!`;
+                            
+                            // Award happiness points based on score
+                            const happinessBonus = Math.min(30, Math.floor(result.score / 100));
+                            fetch('/minigame/complete', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    game: 'pacman',
+                                    score: result.score,
+                                    won: true,
+                                    happiness_bonus: happinessBonus
+                                })
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                updateUI(data);
+                            });
+                            
+                        } else if (result.lost) {
+                            document.getElementById('pacmanStatus').textContent = 
+                                `💀 Game Over! Score: ${result.score}. Better luck next time!`;
+                        }
+                    }
+                }, 500);
+            }
+        }
+        
+        function resetPacManGame() {
+            if (pacmanGame) {
+                pacmanGame.reset();
+                document.getElementById('pacmanStatus').textContent = 'Game reset! Click START to begin.';
+            }
+        }
+        
+        // Snake Game Functions
+        function openSnakeGame() {
+            // Stop other games first
+            stopAllGames();
+            document.getElementById('snakeModal').style.display = 'block';
+            if (!snakeGame) {
+                snakeGame = new SnakeGame('snakeCanvas', currentTamagotchiImage);
+            }
+            snakeGame.reset();
+        }
+        
+        function closeSnakeGame() {
+            document.getElementById('snakeModal').style.display = 'none';
+            if (snakeGame) {
+                snakeGame.gameRunning = false;
+                snakeGame.unbindEvents();
+            }
+        }
+        
+        function startSnakeGame() {
+            if (snakeGame) {
+                // Focus the canvas to ensure keyboard input works
+                document.getElementById('snakeCanvas').focus();
+                snakeGame.start();
+                document.getElementById('snakeStatus').textContent = 'Game in progress! Eat food to grow your snake!';
+                
+                const checkGameStatus = setInterval(() => {
+                    if (!snakeGame.gameRunning) {
+                        clearInterval(checkGameStatus);
+                        const result = snakeGame.getGameResult();
+                        
+                        if (result.won) {
+                            document.getElementById('snakeStatus').textContent = 
+                                `🏆 Amazing! Score: ${result.score}. Your snake filled the board!`;
+                            
+                            const happinessBonus = Math.min(25, Math.floor(result.score / 50));
+                            fetch('/minigame/complete', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    game: 'snake',
+                                    score: result.score,
+                                    won: true,
+                                    happiness_bonus: happinessBonus
+                                })
+                            })
+                            .then(response => response.json())
+                            .then(data => { updateUI(data); });
+                            
+                        } else if (result.lost) {
+                            document.getElementById('snakeStatus').textContent = 
+                                `💥 Game Over! Score: ${result.score}. Don't give up!`;
+                        }
+                    }
+                }, 500);
+            }
+        }
+        
+        function resetSnakeGame() {
+            if (snakeGame) {
+                snakeGame.reset();
+                document.getElementById('snakeStatus').textContent = 'Game reset! Click START to begin.';
+            }
+        }
+        
+        // Memory Game Functions
+        function openMemoryGame() {
+            // Stop other games first
+            stopAllGames();
+            document.getElementById('memoryModal').style.display = 'block';
+            if (!memoryGame) {
+                memoryGame = new MemoryGame('memoryCanvas', currentTamagotchiImage);
+            }
+            memoryGame.reset();
+        }
+        
+        function closeMemoryGame() {
+            document.getElementById('memoryModal').style.display = 'none';
+            if (memoryGame) {
+                memoryGame.gameRunning = false;
+            }
+        }
+        
+        // Utility function to stop all games and clean up events
+        function stopAllGames() {
+            if (pacmanGame) {
+                pacmanGame.gameRunning = false;
+                if (pacmanGame.unbindEvents) pacmanGame.unbindEvents();
+            }
+            if (snakeGame) {
+                snakeGame.gameRunning = false;
+                if (snakeGame.unbindEvents) snakeGame.unbindEvents();
+            }
+            if (memoryGame) {
+                memoryGame.gameRunning = false;
+            }
+        }
+        
+        function startMemoryGame() {
+            if (memoryGame) {
+                memoryGame.start();
+                document.getElementById('memoryStatus').textContent = 'Game in progress! Find all matching pairs!';
+                
+                const checkGameStatus = setInterval(() => {
+                    if (!memoryGame.gameRunning) {
+                        clearInterval(checkGameStatus);
+                        const result = memoryGame.getGameResult();
+                        
+                        if (result.won) {
+                            document.getElementById('memoryStatus').textContent = 
+                                `🧠 Excellent memory! Score: ${result.score} in ${result.moves} moves!`;
+                            
+                            const happinessBonus = Math.min(20, Math.floor(result.score / 100));
+                            fetch('/minigame/complete', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    game: 'memory',
+                                    score: result.score,
+                                    won: true,
+                                    happiness_bonus: happinessBonus
+                                })
+                            })
+                            .then(response => response.json())
+                            .then(data => { updateUI(data); });
+                            
+                        } else if (result.lost) {
+                            document.getElementById('memoryStatus').textContent = 
+                                `Try again! Practice makes perfect.`;
+                        }
+                    }
+                }, 500);
+            }
+        }
+        
+        function resetMemoryGame() {
+            if (memoryGame) {
+                memoryGame.reset();
+                document.getElementById('memoryStatus').textContent = 'Game reset! Click START to begin.';
+            }
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const renameModal = document.getElementById('renameModal');
+            const pacmanModal = document.getElementById('pacmanModal');
+            const snakeModal = document.getElementById('snakeModal');
+            const memoryModal = document.getElementById('memoryModal');
+            
+            if (event.target == renameModal) {
+                closeRenameModal();
+            } else if (event.target == pacmanModal) {
+                closePacManGame();
+            } else if (event.target == snakeModal) {
+                closeSnakeGame();
+            } else if (event.target == memoryModal) {
+                closeMemoryGame();
+            }
+        }
+        
+        // Start game loop
+        updateGame();
+        gameInterval = setInterval(updateGame, 5000); // Update every 5 seconds
+        
+        // Handle page visibility change to pause/resume game
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                clearInterval(gameInterval);
+            } else {
+                updateGame();
+                gameInterval = setInterval(updateGame, 5000);
+            }
+        });
+    </script>
+</body>
+</html> 
